@@ -207,7 +207,7 @@ pub fn getSection(sectionsList: std.ArrayList(std.elf.Elf64_Shdr), shstrtab: std
     return null;
 }
 
-pub fn readMemRelRBP(offset: i64) i64 {
+pub inline fn readMemRelRBP(offset: i64) i64 {
     var out: i64 = undefined;
     asm volatile (
         \\ mov (%rbp, %[offset]), %[out]
@@ -219,6 +219,11 @@ pub fn readMemRelRBP(offset: i64) i64 {
 }
 
 pub fn main() !void {
+    try a();
+    // Clean up
+    // c.dwarf_dealloc_fde_cie_list(dbg, null, 0, fde_list, fde_count);
+}
+pub fn a() !void {
     var elf_fd = try std.fs.cwd().openFile("./zig-out/bin/zig-unwind", .{});
     defer elf_fd.close();
 
@@ -399,7 +404,6 @@ pub fn main() !void {
                 //});
                 const ret_offset: i64 = unwindCtx.cfa.o + unwindCtx.registers[return_addr_register] * data_alignment_factor;
                 const ret_address = readMemRelRBP(ret_offset);
-                //std.log.warn("Return address: 0x{x}", .{ret_address});
                 const fnName = try getFunctionName(elf_handle.?, pc, allocator);
                 const lastFnName = try getFunctionName(elf_handle.?, ret_address, allocator);
                 std.log.warn("Return address: 0x{x}\n", .{ret_address});
@@ -410,9 +414,6 @@ pub fn main() !void {
             // std.debug.print("FDE: range 0x{x} - 0x{x}\n", .{ low_pc, low_pc + func_length });
         }
     }
-
-    // Clean up
-    // c.dwarf_dealloc_fde_cie_list(dbg, null, 0, fde_list, fde_count);
 }
 
 const UnwindContext = struct {
