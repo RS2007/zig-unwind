@@ -1,0 +1,9 @@
+zig-out/
+.zig-cache/
+*.c
+*.bin
+*.hex
+leb128.md
+*.a
+*.o
+out
